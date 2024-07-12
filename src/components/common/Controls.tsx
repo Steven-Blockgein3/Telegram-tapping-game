@@ -131,7 +131,7 @@ const Controls = () => {
         <DrawerTrigger asChild>
           <Button className=" relative flex flex-col items-center h-[60px] mt-5 w-[70px] gap-1 bg-[#C3C3C340]">
             <PumpIcon height={24} />
-            <div className="font-bold">Pump</div>
+            <div className="font-bold">Pum</div>
           </Button>
         </DrawerTrigger>
         <DrawerContent className="pt-6 flex flex-col items-center pb-3">
