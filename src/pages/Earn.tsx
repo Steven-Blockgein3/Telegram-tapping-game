@@ -1,19 +1,14 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import SaveIcon from "@/assets/svg/save.svg?react";
-import DropIcon from "@/assets/svg/dropIcon.svg";
-// import DropIcon from "@/assets/images/drop.png";
-import Telegram from "@/assets/images/tele.gif";
-import Twitter from "@/assets/svg/twitter.svg";
-import Youtube from "@/assets/svg/earn/youtube.svg";
+import DropIcon from "@/assets/svg/dropIcon.svg?react";
+import Telegram from "@/assets/images/telegram.gif";
+import Twitter from "@/assets/images/tweeter.png";
+// import Youtube from "@/assets/svg/youtube.svg";
 import Community from "@/assets/images/community.png";
-import DailPump from "@/assets/images/dailpump.png";
 import JoinTank from "@/assets/images/jointank.png";
 import { Button } from "@/components/ui/button";
 import { FaCheck, FaChevronRight } from "react-icons/fa6";
-import Diamond from "@/assets/images/diamond.png";
 import { displayNumbers } from "@/lib/utils";
-// import { LiaCheckSolid } from "react-icons/lia";
-
 import {
   Drawer,
   DrawerClose,
@@ -21,12 +16,15 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import DailyPump from "@/components/common/DailyPump";
 import { IoCloseCircleSharp } from "react-icons/io5";
 import { useEffect, useState } from "react";
-import Confetti from "react-confetti";
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
-import { balanceAtom, currentTankAtom, tabsAtom } from "@/lib/atom";
+import {
+  balanceAtom,
+  confettiAtom,
+  currentTankAtom,
+  tabsAtom,
+} from "@/lib/atom";
 import { Toast } from "@/lib/toast";
 
 const allTasks = [
@@ -46,26 +44,19 @@ const allTasks = [
     completed: false,
     link: "https://x.com/smartlitre?s=21&t=AXJCLgvmsPnKoMsdF5V9Cw",
   },
-  {
-    id: 3,
-    title: "Watch SmartLitre Game Demo",
-    drops: 5000,
-    image: Youtube,
-    completed: false,
-    link: "http://www.youtube.com/@SmartLitre",
-  },
+  // {
+  //   id: 3,
+  //   title: "Watch SmartLitre Game Demo",
+  //   drops: 5000,
+  //   image: Youtube,
+  //   completed: false,
+  //   link: "http://www.youtube.com/@SmartLitre",
+  // },
   {
     id: 4,
     title: "Invite 3 friends",
     drops: 25000,
     image: Community,
-    completed: false,
-  },
-  {
-    id: 5,
-    title: "Daily Pump",
-    drops: 6649000,
-    image: DailPump,
     completed: false,
   },
   {
@@ -78,7 +69,7 @@ const allTasks = [
 ];
 
 const Earn = () => {
-  const [showConfetti, setShowConfetti] = useState(false);
+  const setShowConfetti = useSetRecoilState(confettiAtom);
   const currentTank = useRecoilValue(currentTankAtom);
   const setBalance = useSetRecoilState(balanceAtom);
   const [tabs, setTabs] = useRecoilState(tabsAtom);
@@ -87,21 +78,21 @@ const Earn = () => {
   const [tasks, setTasks] = useState(allTasks);
 
   // Function to handle task completion
-  const handleTaskCompletion = (taskId: number) => {
-    const task = tasks.filter((t) => t.id === taskId);
-    if (!task[0].completed) {
-      setTasks(
-        tasks.map((task) =>
-          task.id === taskId ? { ...task, completed: true } : task
-        )
-      );
-      Toast("Task complete", "info");
-      setShowConfetti(true);
-    }
-    setTimeout(() => {
-      setShowConfetti(false);
-    }, 5000);
-  };
+  // const handleTaskCompletion = (taskId: number) => {
+  //   const task = tasks.filter((t) => t.id === taskId);
+  //   if (!task[0].completed) {
+  //     setTasks(
+  //       tasks.map((task) =>
+  //         task.id === taskId ? { ...task, completed: true } : task
+  //       )
+  //     );
+  //     Toast("Task complete", "info");
+  //     setShowConfetti(true);
+  //   }
+  //   setTimeout(() => {
+  //     setShowConfetti(false);
+  //   }, 5000);
+  // };
 
   const handleLinktasksCompletion = (taskId: number, URL?: string) => {
     if (URL) window.location.href = URL;
@@ -111,7 +102,10 @@ const Earn = () => {
   useEffect(() => {
     const task = tasks.filter((t) => t.id === 6);
     if (currentTank.name !== "" && !task[0].completed) {
-      setBalance((prev) => prev + 5000);
+      setBalance((prev) => {
+        localStorage.setItem("balance", (prev + 5000).toString());
+        return prev + 5000;
+      });
       setTasks(
         tasks.map((task) =>
           task.id === 6 ? { ...task, completed: true } : task
@@ -152,8 +146,8 @@ const Earn = () => {
         Earn more DROPS
       </div>
       <div className="flex flex-col items-center mt-1">
-        <img src={DropIcon} alt="drop" />
-        <SaveIcon className="-mt-4" />
+        <DropIcon className="mt-3" height={50} width={50} />
+        <SaveIcon className="w-44" />
       </div>
       <div className="mt-3 font-extrabold text-[13px] leading-6">Tasks</div>
       <div className="flex flex-col gap-[5px] mt-1 w-full">
@@ -176,8 +170,8 @@ const Earn = () => {
                   <div className="font-bold text-[11px] leading-6">
                     {task.title}
                   </div>
-                  <div className="flex items-center -mt-1 -ml-1">
-                    <img src={Diamond} alt="diamond" className="h-5" />
+                  <div className="flex items-center gap-0.5 -mt-1 -ml-1">
+                    <DropIcon className="h-3 w-3  -mt-0.5" />
                     <div className="font-extrabold text-[11px] leading-6">
                       +{displayNumbers(task.drops)}
                     </div>
@@ -209,8 +203,8 @@ const Earn = () => {
                       <div className="font-bold text-[11px] leading-6">
                         {task.title}
                       </div>
-                      <div className="flex items-center -mt-1 -ml-1">
-                        <img src={Diamond} alt="diamond" className="h-5" />
+                      <div className="flex items-center -mt-1 gap-0.5 -ml-1">
+                        <DropIcon className="h-3 w-3  -mt-0.5" />
                         <div className="font-extrabold text-[11px] leading-6">
                           +{displayNumbers(task.drops)}
                         </div>
@@ -224,11 +218,7 @@ const Earn = () => {
                   )}
                 </Button>
               </DrawerTrigger>
-              {task.id == 5 ? (
-                <DailyPump
-                  handleTaskCompletion={() => handleTaskCompletion(task.id)}
-                />
-              ) : (
+              {
                 <DrawerContent className="flex flex-col items-center pb-8 pt-7">
                   <DrawerTitle className="ml-auto mr-5">
                     <DrawerClose>
@@ -260,20 +250,19 @@ const Earn = () => {
                       }
                       if (task.id === 6) {
                         setTabs([...tabs, "jointank"]);
+                        return;
                       }
+                      Toast("Task Incomplete", "info");
                       return;
                     }}
                   >
                     {task.completed ? "Completed" : "Check"}
                   </DrawerClose>
                 </DrawerContent>
-              )}
+              }
             </Drawer>
           );
         })}
-        {showConfetti && (
-          <Confetti numberOfPieces={1500} recycle={false} gravity={0.09} />
-        )}
       </div>
     </div>
   );

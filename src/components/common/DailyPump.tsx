@@ -4,20 +4,21 @@ import { DrawerClose, DrawerContent, DrawerTitle } from "../ui/drawer";
 import { IoCloseCircleSharp } from "react-icons/io5";
 import { Button } from "../ui/button";
 import { displayNumbers } from "@/lib/utils";
-
-import Diamond from "@/assets/images/diamond.png";
-import Confetti from "react-confetti";
+import DropIcon from "@/assets/svg/dropIcon.svg?react";
 import PumpIcon from "@/assets/svg/pumpIcon.svg";
 import { Toast } from "@/lib/toast";
+import Confetti from "react-confetti";
+import { useSetRecoilState } from "recoil";
+import { balanceAtom } from "@/lib/atom";
 
 const dropsDays = [
   500, 1000, 2500, 5000, 15000, 25000, 100000, 500000, 1000000, 5000000,
 ];
 
-type Props = {
-  handleTaskCompletion?: (taskId: number) => void;
-};
-const DailyPump = ({ handleTaskCompletion }: Props) => {
+
+const DailyPump = (
+  
+) => {
   const [currentDay, setCurrentDay] = useState(0);
   const [totalDrops, setTotalDrops] = useState(0);
   const [collected, setCollected] = useState(Array(10).fill(false));
@@ -68,6 +69,8 @@ const DailyPump = ({ handleTaskCompletion }: Props) => {
     }
   }, [lastPumpTime]);
 
+  const setBalance = useSetRecoilState(balanceAtom);
+
   const handlePump = () => {
     if (collected[currentDay] || !isPumpAvailable) return;
 
@@ -76,10 +79,14 @@ const DailyPump = ({ handleTaskCompletion }: Props) => {
     newCollected[currentDay] = true;
 
     Toast(`You've received +${dropsDays[currentDay]} DROPS`, "info");
+    setBalance((prev) => {
+      const newBalance = prev + dropsDays[currentDay];
+      localStorage.setItem("balance", newBalance.toString());
+      return newBalance;
+    });
     setTotalDrops(newTotalDrops);
     setCollected(newCollected);
     setLastPumpTime(new Date());
-    setShowConfetti(true);
 
     setTimeout(() => {
       setShowConfetti(false);
@@ -116,16 +123,12 @@ const DailyPump = ({ handleTaskCompletion }: Props) => {
             key={index}
             className={`font-extrabold text-[12px] leading-[18px] flex flex-col h-auto  ${
               collected[index]
-                ? "bg-[#20C962] border-2 border-[#20C962] hover:bg-[#38c76f]"
+                ? "bg-[#20C962]/50 border-2 border-[#20C962] hover:bg-[#38c76f]"
                 : "bg-[#C3C3C33D] border-2 border-transparent hover:bg-[#f7eded3d]"
-            } ${
-              currentDay === index
-                ? "border border-[#20C962]"
-                : "border border-transparent"
             }`}
           >
             <div>Day {index + 1}</div>
-            <img src={Diamond} alt="diamond" />
+            <DropIcon className="my-1 h-6 w-6" />
             <div>{displayNumbers(drops)}</div>
           </Button>
         ))}
@@ -133,7 +136,9 @@ const DailyPump = ({ handleTaskCompletion }: Props) => {
       <div className="w-full px-4 mt-4">
         {isPumpAvailable ? (
           <Button
-            onClick={handlePump}
+            onClick={() => {
+              handlePump();
+            }}
             disabled={!isPumpAvailable}
             className="bg-[#9712F4] font-bold h-12 w-full text-[16px] rounded-full"
           >
@@ -141,11 +146,8 @@ const DailyPump = ({ handleTaskCompletion }: Props) => {
           </Button>
         ) : (
           <DrawerClose asChild>
-            <Button
-              onClick={() => handleTaskCompletion && handleTaskCompletion(4)}
-              className="bg-[#402F4D] font-bold h-12 w-full text-[16px] text-white rounded-full"
-            >
-              Come Back Tommorrow
+            <Button className="bg-[#402F4D] font-bold h-12 w-full text-[16px] text-white rounded-full">
+              Come Back Tomorrow
             </Button>
           </DrawerClose>
         )}

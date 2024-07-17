@@ -6,16 +6,17 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { balanceAtom, energyAtom, tabsAtom } from "@/lib/atom";
-import { displayNumbers } from "@/lib/utils";
-import { useRecoilValue, useSetRecoilState } from "recoil";
+import { cn, displayNumbers } from "@/lib/utils";
+import { useRecoilState, useSetRecoilState } from "recoil";
 import { Button } from "@/components/ui/button";
-import DropIcon from "@/assets/svg/dropIcon.svg";
-import EnergyIcon from "@/assets/svg/energyIcon.svg";
+import DropIcon from "@/assets/svg/dropIcon.svg?react";
+import EnergyIcon from "@/assets/svg/energyIcon.svg?react";
 import { FaChevronRight } from "react-icons/fa6";
 import { IoCloseCircleSharp } from "react-icons/io5";
 import Electrolite from "@/assets/svg/electrolyte.svg";
 import multitap from "@/assets/svg/multitap.svg";
 import { Toast } from "@/lib/toast";
+import { useEffect, useState } from "react";
 
 const boosters = [
   {
@@ -23,7 +24,7 @@ const boosters = [
     title: "Electrolyte",
     subtitle: "Increase the amount of energy",
     desc: "+500 energy points for Silver level",
-    drops: 20000,
+    drops: 3000,
     level: "Silver",
     message: "Boost has been increased by 500 points",
   },
@@ -39,16 +40,31 @@ const boosters = [
 ];
 
 const Boost = () => {
-  const balance = useRecoilValue(balanceAtom);
+  const [balance, setBalance] = useRecoilState(balanceAtom);
   const setTabs = useSetRecoilState(tabsAtom);
-  const dailEnergy = localStorage.getItem("dailyEnergy") ?? "6";
+  const maxEnergy = Number(localStorage.getItem("energyMax") ?? "500");
+  const [dailEnergy, setDailEnergy] = useState(
+    Number(localStorage.getItem("dailyEnergy") ?? "6")
+  );
   const setEnergy = useSetRecoilState(energyAtom);
+  const LastEnergyTime = localStorage.getItem("lastEnergyTime");
+  useEffect(() => {
+    if (LastEnergyTime) {
+      const now = new Date();
+      const timeDiff = now.getTime() - new Date(LastEnergyTime).getTime();
+      const hoursPassed = timeDiff / (1000 * 60 * 60);
+      if (hoursPassed >= 24) {
+        localStorage.setItem("dailyEnergy", "6");
+        setDailEnergy(6);
+      }
+    }
+  }, [LastEnergyTime]);
 
   return (
     <div className="py-5 px-5 flex flex-col items-center">
       <h2 className="text-[20px] leading-6 font-medium pl-3">Your balance</h2>
-      <h2 className="flex items-center justify-center mt-[17px]">
-        <img src={DropIcon} alt="drops" className="h-9" />
+      <h2 className="flex items-center gap-2 justify-center mt-[17px]">
+        <DropIcon height={28} width={28} className="-mt-1" />
         <span className="text-[33px] font-extrabold leading-6">
           {displayNumbers(balance)}
         </span>
@@ -58,14 +74,10 @@ const Boost = () => {
           Free daily boosters
         </h2>
         <Drawer>
-          <DrawerTrigger asChild>
+          <DrawerTrigger asChild disabled={dailEnergy === 0}>
             <Button className="flex items-center bg-[#C3C3C33D] h-[62px] justify-between w-full">
               <div className="flex items-center gap-2">
-                <img
-                  src={EnergyIcon}
-                  alt={"energy"}
-                  className="h-[27px] w-[27px]"
-                />
+                <EnergyIcon />
                 <div className="flex flex-col">
                   <div className="font-bold text-[11px] leading-6">
                     <h2 className="text-xs leading-6 font-bold">Full energy</h2>
@@ -84,7 +96,7 @@ const Boost = () => {
                 <IoCloseCircleSharp color="#FFFFFF80" size={25} />
               </DrawerClose>
             </DrawerTitle>
-            <img src={EnergyIcon} alt={`enery`} className="w-[126px]" />
+            <EnergyIcon className="h-[6.5rem] w-[6.5rem]" />
             <div className="font-bold text-[24px] leading-[18px] mt-6 mb-2">
               Full energy
             </div>
@@ -92,21 +104,27 @@ const Boost = () => {
               Recharge your energy to the maximum and do another round of
               hydrating
             </p>
-            <p className="text-sm font-extrabold text-white leading-[18px] text-center mb-6 px-8 flex items-center">
-              <img src={DropIcon} alt="drop" />
+            <div className="text-sm font-extrabold text-white leading-[18px] text-center mb-6 px-8 flex gap-1 items-center">
+              <DropIcon className="h-6 w-6" />
               <span className="text-[24px] font-bold text-white leading-[18px]">
                 Free
               </span>
-            </p>
+            </div>
             <DrawerClose
               className="w-[250px] bg-[#9712F4] h-[48px] font-bold text-[16px] leading-5 rounded-[30px]"
               style={{ boxShadow: "0px 4px 4px 0px #00000040" }}
               onClick={() => {
                 localStorage.setItem(
                   "dailyEnergy",
-                  (Number(dailEnergy) - 1).toString()
+                  (dailEnergy - 1).toString()
                 );
-                setEnergy(500);
+                localStorage.setItem(
+                  "lastEnergyTime",
+                  new Date().toISOString()
+                );
+                setDailEnergy(dailEnergy - 1);
+
+                setEnergy(maxEnergy);
                 Toast("Energy successfully recharged", "info");
                 setTimeout(() => {
                   setTabs((tabs) =>
@@ -120,13 +138,20 @@ const Boost = () => {
           </DrawerContent>
         </Drawer>
       </div>
-      <div className="flex flex-col gap-2 w-full">
+      <div className="flex flex-col gap-2 mt-1   w-full">
         <h2 className=" font-extrabold text-sm leading-6 mb-1 ml-1">
           Boosters
         </h2>
         {boosters.map((booster, idx) => (
           <Drawer key={idx}>
-            <DrawerTrigger asChild>
+            <DrawerTrigger
+              asChild
+              disabled={
+                idx === 0
+                  ? localStorage.getItem("energyMax") === "1000"
+                  : localStorage.getItem("dropsAmount") === "2"
+              }
+            >
               <Button className="flex items-center bg-[#C3C3C33D] h-[62px] justify-between w-full">
                 <div className="flex items-center gap-2">
                   <img
@@ -139,9 +164,8 @@ const Boost = () => {
                       {booster.title}
                     </div>
                     <div className="flex items-center -mt-1 -ml-1">
-                      {/* <img src={Diamond} alt="diamond" className="h-5" /> */}
                       <div className="font-extrabold text-[11px] leading-6 flex items-center gap-[2px]">
-                        <img src={DropIcon} alt="drop" className="h-5" />
+                        <DropIcon className="h-3   w-3   -mt-[2px]" />
                         {displayNumbers(booster.drops)}
                         <span className="font-bold">
                           - {booster.level} level
@@ -174,54 +198,39 @@ const Boost = () => {
                 {booster.desc}
               </p>
               <p className="text-sm font-extrabold text-white leading-[18px] mt-2 mb-6 flex items-center gap-1">
-                <img src={DropIcon} alt="drop" className="h-7" />
+                <DropIcon className="mt-1" />{" "}
                 <span className="text-[24px] font-bold">
                   {displayNumbers(booster.drops)}
                 </span>
                 <span className="font-bold">{booster.level} level</span>
               </p>
-              {booster.title === "Multitap" ? (
-                <DrawerClose
-                  className="w-[250px] bg-[#9712F4] h-[48px] font-bold text-[16px] leading-5 rounded-[30px]"
-                  style={{ boxShadow: "0px 4px 4px 0px #00000040" }}
-                  onClick={() => {
-                    Toast(booster.message, "info");
-                    setTimeout(() => {
-                      setTabs((tabs) =>
-                        tabs.length === 1
-                          ? tabs
-                          : tabs.slice(0, tabs.length - 1)
-                      );
-                    }, 20);
-                  }}
-                >
-                  Get
-                </DrawerClose>
-              ) : balance >= 20000 && booster.title === "Electrolyte" ? (
-                <DrawerClose
-                  className="w-[250px] bg-[#9712F4] h-[48px] font-bold text-[16px] leading-5 rounded-[30px]"
-                  style={{ boxShadow: "0px 4px 4px 0px #00000040" }}
-                  onClick={() => {
-                    Toast(booster.message, "info");
-                    setTimeout(() => {
-                      setTabs((tabs) =>
-                        tabs.length === 1
-                          ? tabs
-                          : tabs.slice(0, tabs.length - 1)
-                      );
-                    }, 20);
-                  }}
-                >
-                  Get
-                </DrawerClose>
-              ) : (
-                <DrawerClose
-                  className="w-[250px] bg-[#7054a5] h-[48px] font-bold text-[16px] leading-5 rounded-[30px]"
-                  style={{ boxShadow: "0px 4px 4px 0px #00000040" }}
-                >
-                  Insufficient Funds
-                </DrawerClose>
-              )}
+              <DrawerClose
+                className={cn(
+                  "w-[250px] bg-[#9712F4] h-[48px] font-bold text-[16px] leading-5 rounded-[30px]",
+                  balance < booster.drops ? "bg-[#7054a5]" : ""
+                )}
+                style={{ boxShadow: "0px 4px 4px 0px #00000040" }}
+                onClick={() => {
+                  if (booster.title === "Multitap") {
+                    localStorage.setItem("dropsAmount", "2");
+                  } else {
+                    setEnergy(1000);
+                    localStorage.setItem("energyMax", "1000");
+                  }
+                  Toast(booster.message, "info");
+                  setTimeout(() => {
+                    setTabs((tabs) =>
+                      tabs.length === 1 ? tabs : tabs.slice(0, tabs.length - 1)
+                    );
+                  }, 20);
+                  const newBalance = balance - booster.drops;
+                  setBalance(newBalance);
+                  localStorage.setItem("balance", newBalance.toString());
+                }}
+                disabled={balance < booster.drops}
+              >
+                {balance < booster.drops ? "Insufficeint Funds" : "Get"}
+              </DrawerClose>
             </DrawerContent>
           </Drawer>
         ))}
