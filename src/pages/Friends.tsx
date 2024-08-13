@@ -1,6 +1,5 @@
-import Diamond from "@/assets/images/diamond.png";
 import FriendsIcon from "@/assets/svg/friends.svg";
-import telegram from "@/assets/images/tele.gif";
+import telegram from "@/assets/images/telegram.gif";
 import premium from "@/assets/images/premium.gif";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,9 +12,10 @@ import {
 import HandIcon from "@/assets/svg/hand.svg?react";
 import { IoCloseCircleSharp } from "react-icons/io5";
 import { displayNumbers } from "@/lib/utils";
-import FriendIcon from "@/assets/svg/friend.svg?react";
 import { LevelDatable } from "@/components/common/level-datatable";
 import { LevelFriend } from "@/interface/LevelFriend";
+import DropIcon from "@/assets/svg/dropIcon.svg?react";
+// import { seaCreatures } from "@/lib/seacreatures";
 
 const inviteOptions = [
   {
@@ -30,32 +30,32 @@ const inviteOptions = [
   },
 ];
 
-const friends = [
-  {
-    name: "Athar",
-    level: "Bronze",
-    amount: 2000,
-    option: "Telegram User",
-  },
-  {
-    name: "Athar",
-    level: "Bronze",
-    amount: 2000,
-    option: "Telegram User",
-  },
-  {
-    name: "Athar",
-    level: "Bronze",
-    amount: 25000,
-    option: "Premium User",
-  },
-  {
-    name: "Athar",
-    level: "Bronze",
-    amount: 25000,
-    option: "Premium User",
-  },
-];
+// const friends = [
+//   {
+//     name: "Athar",
+//     level: "Bronze",
+//     amount: 2000,
+//     option: "Telegram User",
+//   },
+//   {
+//     name: "Athar",
+//     level: "Bronze",
+//     amount: 2000,
+//     option: "Telegram User",
+//   },
+//   {
+//     name: "Athar",
+//     level: "Bronze",
+//     amount: 25000,
+//     option: "Premium User",
+//   },
+//   {
+//     name: "Athar",
+//     level: "Bronze",
+//     amount: 25000,
+//     option: "Premium User",
+//   },
+// ];
 
 const friendsLevel: LevelFriend[] = [
   {
@@ -92,7 +92,7 @@ const friendsLevel: LevelFriend[] = [
 
 const Friends = () => {
   return (
-    <div className="flex flex-col pt-3 items-center">
+    <div className="flex flex-col items-center pt-3">
       <div className="font-extrabold text-[20px]">Friends</div>
       <img src={FriendsIcon} alt="friends" className="w-[10rem] mt-2" />
       <div className="font-extrabold text-[14px] leading-[18px] mt-2 text-white/80">
@@ -113,8 +113,8 @@ const Friends = () => {
               alt={option.title}
               className="h-[3rem] mt-[9px]"
             />
-            <div className="flex items-center mt-2">
-              <img src={Diamond} alt="diamond" className="h-5 w-5 mt-1" />
+            <div className="flex items-center gap-0.5 mt-2">
+              <DropIcon className="w-4 h-4" />
               <div className="font-extrabold text-[20px]">
                 {displayNumbers(option.drops)}
               </div>
@@ -125,7 +125,7 @@ const Friends = () => {
           </div>
         ))}
       </div>
-      <div className="flex flex-col gap-4 mt-5 px-12 w-full">
+      <div className="flex flex-col w-full gap-4 px-12 mt-5">
         <Button
           className="bg-[#9712F4] font-bold h-12 w-full text-[16px] rounded-full"
           style={{
@@ -146,18 +146,18 @@ const Friends = () => {
               Level Up Bonus
             </Button>
           </DrawerTrigger>
-          <DrawerContent className="pt-6 flex flex-col items-center pb-3">
-            <DrawerTitle className="flex items-center w-full justify-between mr-5">
+          <DrawerContent className="flex flex-col items-center pt-6 pb-3">
+            <DrawerTitle className="flex items-center justify-between w-full mr-5">
               <div></div>
-              <div className="font-extrabold text-[24px] leading-6">
+              <div className="font-extrabold translate-x-4 text-[24px] leading-6">
                 Level Up Bonus
               </div>
               <DrawerClose>
                 <IoCloseCircleSharp color="#FFFFFF80" size={25} />
               </DrawerClose>
             </DrawerTitle>
-            <img src={Diamond} alt="diamond" className="mt-2" />
-            <HandIcon height={35} />
+            <DropIcon className="mt-2 h-11 w-11" />
+            <HandIcon height={50} />
             <div className="text-white/80 text-center text-[14px] font-extrabold leading-[18px] mt-4 mb-2">
               Earn more DROPS when a friend reaches a certain level
             </div>
@@ -165,42 +165,48 @@ const Friends = () => {
           </DrawerContent>
         </Drawer>
       </div>
-      <div className="flex flex-col gap-2 px-5 mt-3 w-full">
+      <div className="flex flex-col w-full gap-2 px-5 mt-3">
         <div className="font-extrabold text-[15px] leading-[24px]">
           Friends List
         </div>
-        <div className="flex flex-col gap-3 mt-2 w-full">
-          {friends.map((friend, index) => {
+        <div className="flex flex-col w-full gap-3 mt-2">
+          {/* {friends.map((friend, index) => {
             const option = inviteOptions.find(
               (option) => option.title === friend.option
             );
             return (
               <div
                 key={index}
-                className="bg-[#C3C3C33D] rounded-[11px] flex justify-between pr-5 items-center w-full"
+                className="bg-[#C3C3C33D] pl-2 py-2 rounded-[11px] flex justify-between pr-5 items-center w-full"
               >
                 <div className="flex items-center gap-2">
-                  <div className="flex flex-col items-center">
-                    <div className="relative">
-                      <FriendIcon height={70} width={70} />
+                  <div className="rounded-full w-[2.5rem] flex items-center justify-center h-[2.5rem] border-white border px-1 pb-3 pt-2 bg-[#934dca]">
+                    <div
+                      className="w-full h-full bg-contain bg-center bg-[#5417b0] relative overflow-hidden mt-2"
+                      style={{
+                        maskImage: `url(${
+                          seaCreatures.find(
+                            (seacreature) => seacreature.title === friend.level
+                          )?.Fish
+                        })`,
+                        maskSize: "100% 100%",
+                        maskPosition: "center",
+                      }}
+                    ></div>
+                  </div>
+                  <div className="flex flex-col ">
+                    <div className="flex items-center gap-1">
                       <img
                         src={option?.image}
                         alt={option?.title}
-                        className="absolute bottom-2 right-2 w-5"
+                        className="w-4 h-4"
                       />
+                      <div className="font-bold text-[11px] leading-6">
+                        {friend.name}
+                      </div>
                     </div>
-                    <div className="text-[8px] -mt-2">{friend.level} Level</div>
-                  </div>
-                  <div className="flex flex-col">
-                    <div className="font-bold text-[11px] leading-6">
-                      {friend.name}
-                    </div>
-                    <div className="flex items-center -mt-1">
-                      <img
-                        src={Diamond}
-                        alt="diamond"
-                        className="h-4 w-4 mt-0.5"
-                      />
+                    <div className="flex items-center gap-1 -mt-0.5">
+                      <DropIcon className="w-3 h-3" />
                       <div className="font-extrabold text-[11px] leading-6">
                         +{displayNumbers(friend.amount)}
                       </div>
@@ -212,7 +218,10 @@ const Friends = () => {
                 </div>
               </div>
             );
-          })}
+          })} */}
+          <div className="text-white/80 text-center text-[14px] font-extrabold leading-[18px] mt-4 mb-2">
+              currently there are no friends
+            </div>
         </div>
       </div>
     </div>

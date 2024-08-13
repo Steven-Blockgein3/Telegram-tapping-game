@@ -9,7 +9,6 @@ import { seaCreatures } from "@/lib/seacreatures";
 import { cn, displayNumbers } from "@/lib/utils";
 import ProgressBar from "@ramonak/react-progress-bar";
 import { useEffect, useState } from "react";
-import Confetti from "react-confetti";
 import { useRecoilState, useSetRecoilState } from "recoil";
 import {
   currentDataAtom,
@@ -18,6 +17,7 @@ import {
   levelAtom,
   balanceAtom,
   energyAtom,
+  confettiAtom,
 } from "@/lib/atom";
 import {
   Drawer,
@@ -29,9 +29,10 @@ import {
 import { IoCloseCircleSharp } from "react-icons/io5";
 import { FaChevronRight } from "react-icons/fa6";
 import { Toast } from "@/lib/toast";
+import { tanks } from "./JoinTank";
 
 const HomePage = () => {
-  const [showConfetti, setShowConfetti] = useState(false);
+  const setShowConfetti = useSetRecoilState(confettiAtom);
   const [tabs, setTabs] = useRecoilState(tabsAtom);
   const setCurrentSeaCreature = useSetRecoilState(currentDataAtom);
   const [currentTank, setCurrentTank] = useRecoilState(currentTankAtom);
@@ -50,13 +51,20 @@ const HomePage = () => {
 
   const { Medal, drops, title, Fish } = seaCreatures[level];
 
+  const currentTankName = localStorage.getItem("currentTank");
+  const currentTankProps = tanks.filter((t) => t.name === currentTankName)[0];
+
   const currentLevelProgress = (balance / drops) * 100;
+  const amount = Number(localStorage.getItem("dropsAmount") ?? "1");
+  const maxEnergy = Number(localStorage.getItem("energyMax") ?? "500");
 
   const handleClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    const addition = eval("100 / (10*(level+1))");
+    const addition = 100 / (10 * (level + 1));
     if (level < 6 && currentLevelProgress <= 100 && energy > 0) {
       setEnergy((prev) => Math.max(prev - 1, 0));
-      setBalance((prev) => prev + 1);
+      const newBalance = balance + amount;
+      setBalance(newBalance);
+      localStorage.setItem("balance", newBalance.toString());
       const newProgress = waterLevel + addition;
 
       setWaterLevel(() => {
@@ -66,14 +74,10 @@ const HomePage = () => {
         if (newProgress === 100) return 99;
         return newProgress;
       });
-      if (newProgress === 100) {
-        setTimeout(() => {
-          setWaterLevel(0);
-        }, 800);
-      }
+
       const clickX = event.clientX;
       const clickY = event.clientY;
-      setNumbers([...numbers, { number: 1, x: clickX, y: clickY }]);
+      setNumbers([...numbers, { number: amount, x: clickX, y: clickY }]);
     }
     if (energy === 0) {
       Toast("You're exhausted. Wait for Energy to come up.", "info");
@@ -82,9 +86,9 @@ const HomePage = () => {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setEnergy((prev) => Math.min(prev + 1, 500)); // Add energy up to 500
+      setEnergy((prev) => Math.min(prev + 1, maxEnergy)); // Add energy up to 500
     }, 2000);
-    if (energy >= 500) clearInterval(timer);
+    if (energy >= maxEnergy) clearInterval(timer);
     return () => clearInterval(timer);
   }, [balance]);
 
@@ -107,6 +111,7 @@ const HomePage = () => {
         );
       setTimeout(() => {
         setLevel(level + 1);
+        localStorage.setItem("level", (level + 1).toString());
       }, 5000);
       setWaterLevel(0);
     }
@@ -115,7 +120,7 @@ const HomePage = () => {
   return (
     <>
       <div className="flex flex-col items-center h-full px-3 grow shrink basis-auto">
-        {currentTank.name === "" && currentTank.image === "" ? (
+        {!currentTankName ? (
           <Button
             onClick={() => {
               setTabs([...tabs, "jointank"]);
@@ -130,11 +135,13 @@ const HomePage = () => {
             <DrawerTrigger className="flex items-center gap-2 py-[6px] px-[13px] justify-between w-full bg-[#8d2aec] rounded-full">
               <div className="flex items-center gap-2">
                 <img
-                  src={currentTank.image}
-                  alt={currentTank.name}
+                  src={currentTankProps.image}
+                  alt={currentTankProps.name}
                   className="h-10"
                 />
-                <div className="font-bold text-[15px]">{currentTank.name}</div>
+                <div className="font-bold text-[15px]">
+                  {currentTankProps.name}
+                </div>
               </div>
               <FaChevronRight fontSize={20} className="text-white" />
             </DrawerTrigger>
@@ -145,16 +152,17 @@ const HomePage = () => {
                 </DrawerClose>
               </DrawerTitle>
               <img
-                src={currentTank.image}
-                alt={currentTank.name}
+                src={currentTankProps.image}
+                alt={currentTankProps.name}
                 className="w-[100px]"
               />
               <div className="font-bold text-[24px] leading-[18px] my-8">
-                {currentTank.name}
+                {currentTankProps.name}
               </div>
               <DrawerClose
                 onClick={() => {
                   setCurrentTank({ name: "", image: "" });
+                  localStorage.removeItem("currentTank");
                   Toast(`You left the ${currentTank.name} Tank`, "info");
                 }}
                 className="w-[250px] bg-[#9712F4] h-[48px] font-bold text-[16px] leading-5 rounded-[30px]"
@@ -166,7 +174,7 @@ const HomePage = () => {
           </Drawer>
         )}
         <div className="flex mt-1 justify-center items-center gap-2 font-extrabold text-[36px]">
-          <DropIcon className="mt-1 h-9" />
+          <DropIcon height={28} width={28} />
           <div>{displayNumbers(parseInt(balance.toFixed(2)))}</div>
         </div>
         <Button
@@ -204,7 +212,9 @@ const HomePage = () => {
           />
           <div className="flex items-center gap-1 mt-2">
             <EnergyIcon />
-            <div className="font-extrabold text-[10px]">{energy}/500</div>
+            <div className="font-extrabold text-[10px]">
+              {energy}/{maxEnergy}
+            </div>
           </div>
         </div>
         {numbers.map((num, index) => (
@@ -220,14 +230,14 @@ const HomePage = () => {
           <div
             onClick={handleClick}
             className={cn(
-              "w-full grow bg-contain bg-center bg-no-repeat relative overflow-hidden flex flex-col justify-center items-center transition-all duration-100",
-              currentLevelProgress >= 100 ? "pulsate" : ""
+              "w-full grow bg-contain bg-center bg-no-repeat relative overflow-hidden flex flex-col justify-center items-center",
+              currentLevelProgress >= 100 ? "animate-bouncing" : ""
             )}
           >
             <div
               className={cn(
-                "w-full bg-contain bg-center bg-no-repeat bg-[#4d307a] relative overflow-hidden transition-all duration-100",
-                currentLevelProgress >= 100 ? "" : ""
+                "w-full bg-contain bg-center bg-no-repeat bg-[#4d307a] relative overflow-hidden",
+                currentLevelProgress >= 100 ? "animate-bouncing" : ""
               )}
               style={
                 currentLevelProgress >= 100
@@ -249,14 +259,6 @@ const HomePage = () => {
               )}
             </div>
           </div>
-          {showConfetti && (
-            <Confetti
-              className="absolute top-0 z-50 w-full h-screen"
-              numberOfPieces={1500}
-              recycle={false}
-              gravity={0.09}
-            />
-          )}
         </div>
       </div>
       <Controls />

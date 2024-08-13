@@ -23,7 +23,7 @@ import { MdPerson } from "react-icons/md";
 import { displayMinimizedNumbers } from "@/lib/utils";
 import { Toast } from "@/lib/toast";
 
-const tanks = [
+ export const tanks = [
   {
     name: "Binance",
     image: binance,
@@ -86,7 +86,7 @@ const JoinTank = () => {
                   <div className="absolute flex items-center bg-[#a016f5] shadow-[0px_0px_20px_0px_#FFFFFF80_inset] rounded-full left-1/2 -translate-x-1/2 px-[3px] py-[0.1px] font-extrabold text-[8px] -bottom-[4px]">
                     <MdPerson />
                     <div className="mt-0.5 text-[6px] font-extrabold">
-                      {displayMinimizedNumbers(tank.money)}+
+                      {displayMinimizedNumbers(0)}
                     </div>
                   </div>
                 </div>
@@ -113,6 +113,8 @@ const JoinTank = () => {
               <DrawerClose
                 onClick={() => {
                   setCurrentTank(tank);
+                  localStorage.setItem("currentTank",tank.name)
+                  localStorage.setItem("joinedTank","yes")
                   setTabs((tabs) =>
                     tabs.length === 1 ? tabs : tabs.slice(0, tabs.length - 1)
                   );
